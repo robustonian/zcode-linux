@@ -101,6 +101,7 @@ main() {
 	load_lib inspect
 	load_lib asar
 	load_lib native-modules
+	load_lib electron
 	check_deps
 
 	# Stage: resolve + (optionally) download the DMG.
@@ -131,7 +132,11 @@ main() {
 	install_linux_prebuilds "$ASAR_EXTRACTED_DIR" "$(detect_arch)"
 	asar_pack "$ASAR_EXTRACTED_DIR" "$SCRIPT_DIR/app.asar"
 	info "asar repacked with Linux natives: ${REPACKED_ASAR:-<none>}"
-	info "electron/assemble/package stages land in C6-C12."
+
+	# Stage: fetch + stage the matching Linux Electron runtime.
+	download_electron "$ZCODE_INSTALL_DIR" "$(detect_arch)"
+	info "electron staged: ${ELECTRON_BIN:-<none>}"
+	info "assemble/package stages land in C7-C12."
 	if [ "$PACKAGE_ONLY" = 1 ]; then
 		warn "package mode not implemented yet (lands in C10+)"
 	fi
