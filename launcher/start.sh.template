@@ -10,6 +10,18 @@ if [ ! -x "$ELECTRON_BIN" ]; then
 	exit 1
 fi
 
+# Default to English for the app UI unless the user overrides.
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+
+# Seed English UI locale on first run (ZCode defaults to zh-CN otherwise;
+# the user can switch language in-app afterwards).
+SETTING_FILE="${ZCODE_SETTING_FILE:-$HOME/.zcode/v2/setting.json}"
+if [ ! -f "$SETTING_FILE" ]; then
+	mkdir -p "$(dirname "$SETTING_FILE")"
+	printf '{"locale":"en-US"}\n' > "$SETTING_FILE"
+fi
+
 # Linux portability flags. The bundled chrome-sandbox is not installed
 # SUID (root:4755), so we disable sandboxing here (same approach as
 # codex-desktop-linux / claude-desktop-debian).
