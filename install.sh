@@ -96,10 +96,32 @@ main() {
 		shift
 	done
 
-	# C1: scaffold only. Real pipeline stages land in subsequent commits.
-	info "scaffold build (C1). Version=${ZCODE_VERSION}, InstallDir=${ZCODE_INSTALL_DIR}"
-	info "pipeline stages (fetch/extract/inspect/repack/native/electron/assemble/package)"
-	info "are implemented across C2–C12. Run './install.sh --help' for options."
+	load_lib install-helpers
+	load_lib dmg
+	check_deps
+
+	# Stage: resolve + (optionally) download the DMG.
+	get_dmg
+
+	if [ "$FETCH_ONLY" = 1 ]; then
+		info "DMG ready: ${RESOLVED_DMG_PATH:-<none>}"
+		exit 0
+	fi
+
+	# Stage: extract the .app bundle.
+	extract_dmg "${RESOLVED_DMG_PATH:-}"
+
+	if [ "$EXTRACT_ONLY" = 1 ]; then
+		info "extracted app bundle: ${APP_BUNDLE_DIR:-<none>}"
+		exit 0
+	fi
+
+	# Remaining pipeline stages land in C3+.
+	info "DMG fetched and extracted (C2). App bundle: ${APP_BUNDLE_DIR:-<none>}"
+	info "inspect/repack/native/electron/assemble/package stages land in C3-C12."
+	if [ "$INSPECT" = 1 ] || [ "$PACKAGE_ONLY" = 1 ]; then
+		warn "requested mode not implemented yet (lands in C3+)"
+	fi
 }
 
 main "$@"
