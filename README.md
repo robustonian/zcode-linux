@@ -43,7 +43,7 @@ ZCode Desktop is an Electron app. Electron apps bundle their UI/logic in a platf
 One command — installs or updates to the latest upstream version:
 
 ```bash
-git clone https://github.com/<owner>/zcode-linux.git
+git clone https://github.com/robustonian/zcode-linux.git
 cd zcode-linux
 make bootstrap            # deps → fetch latest DMG → build → package → install
 ```
