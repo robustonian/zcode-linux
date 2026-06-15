@@ -1,0 +1,36 @@
+# ── upstream binaries & build artifacts (NEVER commit — redistribution-free policy) ──
+*.dmg
+*.exe
+ZCode.dmg
+ZCode.dmg.metadata
+codex-app/
+app-extracted/
+dmg-extract/
+*.asar
+*.asar.unpacked/
+dist/
+work/
+build/
+*.AppImage
+*.deb
+*.rpm
+
+# ── bundled runtimes ──
+node-runtime/
+electron/
+resources/node-runtime/
+
+# ── caches ──
+.cache/
+*.zip
+
+# ── environment-dependent reports (generated per build) ──
+inspect-report.json
+patch-report.json
+build-info.json
+
+# ── editor / OS ──
+.vscode/
+.idea/
+*.swp
+.DS_Store
