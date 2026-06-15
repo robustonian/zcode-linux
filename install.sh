@@ -102,6 +102,7 @@ main() {
 	load_lib asar
 	load_lib native-modules
 	load_lib electron
+	load_lib assemble
 	check_deps
 
 	# Stage: resolve + (optionally) download the DMG.
@@ -136,7 +137,11 @@ main() {
 	# Stage: fetch + stage the matching Linux Electron runtime.
 	download_electron "$ZCODE_INSTALL_DIR" "$(detect_arch)"
 	info "electron staged: ${ELECTRON_BIN:-<none>}"
-	info "assemble/package stages land in C7-C12."
+
+	# Stage: assemble the runnable zcode-app/ (asar + electron + launcher).
+	assemble_app "$ZCODE_INSTALL_DIR"
+	info "zcode-app assembled: $ZCODE_INSTALL_DIR"
+	info "package stages land in C10+."
 	if [ "$PACKAGE_ONLY" = 1 ]; then
 		warn "package mode not implemented yet (lands in C10+)"
 	fi

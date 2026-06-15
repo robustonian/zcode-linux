@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# zcode-app Linux launcher — runs the converted ZCode under the bundled Electron.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ELECTRON_BIN="$SCRIPT_DIR/electron/electron"
+
+if [ ! -x "$ELECTRON_BIN" ]; then
+	echo "zcode-app: electron binary not found at $ELECTRON_BIN" >&2
+	exit 1
+fi
+
+# Linux portability flags. The bundled chrome-sandbox is not installed
+# SUID (root:4755), so we disable sandboxing here (same approach as
+# codex-desktop-linux / claude-desktop-debian).
+ELECTRON_ARGS=(
+	--no-sandbox
+	--disable-dev-shm-usage
+	--disable-gpu-sandbox
+	--class=zcode-desktop
+)
+
+# Session-aware rendering (prefer Wayland native when available).
+case "${XDG_SESSION_TYPE:-}" in
+	wayland)
+		ELECTRON_ARGS+=(--ozone-platform-hint=auto)
+		;;
+esac
+
+# Optional user override: one Electron flag per line.
+FLAGS_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/zcode-desktop/electron-flags.conf"
+if [ -f "$FLAGS_FILE" ]; then
+	while IFS= read -r line; do
+		[ -z "$line" ] && continue
+		[[ "$line" =~ ^[[:space:]]*# ]] && continue
+		ELECTRON_ARGS+=("$line")
+	done < "$FLAGS_FILE"
+fi
+
+exec "$ELECTRON_BIN" "${ELECTRON_ARGS[@]}" "$@"

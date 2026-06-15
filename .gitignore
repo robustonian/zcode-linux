@@ -3,7 +3,7 @@
 *.exe
 ZCode.dmg
 ZCode.dmg.metadata
-codex-app/
+zcode-app/
 app-extracted/
 dmg-extract/
 *.asar
