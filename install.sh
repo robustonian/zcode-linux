@@ -103,6 +103,7 @@ main() {
 	load_lib native-modules
 	load_lib electron
 	load_lib assemble
+	load_lib patches
 	check_deps
 
 	# Stage: resolve + (optionally) download the DMG.
@@ -131,6 +132,10 @@ main() {
 	asar_extract "$resources/app.asar"
 	strip_non_linux_natives "$ASAR_EXTRACTED_DIR"
 	install_linux_prebuilds "$ASAR_EXTRACTED_DIR" "$(detect_arch)"
+
+	# Stage: apply asar patches (descriptors under scripts/patches/core/).
+	apply_patches "$ASAR_EXTRACTED_DIR"
+
 	asar_pack "$ASAR_EXTRACTED_DIR" "$SCRIPT_DIR/app.asar"
 	info "asar repacked with Linux natives: ${REPACKED_ASAR:-<none>}"
 
