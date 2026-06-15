@@ -21,7 +21,7 @@ import sys
 print("3.0.1")
 PY
 )}"
-: "${ZCODE_INSTALL_DIR:=$SCRIPT_DIR/codex-app}"
+: "${ZCODE_INSTALL_DIR:=$SCRIPT_DIR/zcode-app}"
 : "${ZCODE_UPSTREAM_DMG_BASE:=https://cdn.zcode-ai.com/zcode/electron/releases}"
 
 # ── flags parsed by main() ──────────────────────────────────────────────────
@@ -100,6 +100,7 @@ main() {
 	load_lib dmg
 	load_lib inspect
 	load_lib asar
+	load_lib native-modules
 	check_deps
 
 	# Stage: resolve + (optionally) download the DMG.
@@ -123,12 +124,14 @@ main() {
 		exit 0
 	fi
 
-	# Stage: extract + repack app.asar (no patches yet).
+	# Stage: extract, strip macOS-only, swap Linux native prebuilds, repack.
 	local resources="${APP_BUNDLE_DIR}/Contents/Resources"
 	asar_extract "$resources/app.asar"
+	strip_non_linux_natives "$ASAR_EXTRACTED_DIR"
+	install_linux_prebuilds "$ASAR_EXTRACTED_DIR" "$(detect_arch)"
 	asar_pack "$ASAR_EXTRACTED_DIR" "$SCRIPT_DIR/app.asar"
-	info "asar repacked: ${REPACKED_ASAR:-<none>}"
-	info "native/electron/assemble/package stages land in C5-C12."
+	info "asar repacked with Linux natives: ${REPACKED_ASAR:-<none>}"
+	info "electron/assemble/package stages land in C6-C12."
 	if [ "$PACKAGE_ONLY" = 1 ]; then
 		warn "package mode not implemented yet (lands in C10+)"
 	fi

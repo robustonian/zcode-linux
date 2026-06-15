@@ -26,7 +26,7 @@ ZCode Desktop is an Electron app. Electron apps bundle their UI/logic in a platf
 4. **Repack** `app.asar` deterministically, removing macOS-only pieces.
 5. **Rebuild** detected native modules (`node-pty`, etc.) for Linux against the target Electron version with `@electron/rebuild`.
 6. **Download** the matching Linux Electron runtime.
-7. **Assemble** `codex-app/` (Electron + repacked asar + launcher) and generate `start.sh`.
+7. **Assemble** `zcode-app/` (Electron + repacked asar + launcher) and generate `start.sh`.
 8. **Package** as `.deb` / `AppImage`.
 
 ## Prerequisites
@@ -53,8 +53,8 @@ ZCode Desktop is an Electron app. Electron apps bundle their UI/logic in a platf
 > ```bash
 > make install-deps     # bootstrap 7zz + build deps
 > make inspect          # analyze the upstream DMG, write inspect-report.json
-> make build-app        # build ./codex-app/
-> ./codex-app/start.sh  # run it
+> make build-app        # build ./zcode-app/
+> ./zcode-app/start.sh  # run it
 > make deb              # build a .deb into dist/
 > make appimage         # build an AppImage into dist/
 > ```

@@ -2,7 +2,7 @@
 #
 # Thin orchestration layer. Real logic lives in install.sh and scripts/*.sh.
 
-APP_DIR        := $(CURDIR)/codex-app
+APP_DIR        := $(CURDIR)/zcode-app
 PACKAGE_NAME   := zcode-desktop
 DEFAULT_VERSION := 3.0.1
 DIST_DIR       := $(CURDIR)/dist

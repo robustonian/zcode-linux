@@ -15,17 +15,19 @@ asar_extract() {
 	export ASAR_EXTRACTED_DIR
 }
 
-# Remove macOS-only native artifacts that cannot run on Linux.
-# (node-pty darwin prebuilds/builds; Sparkle updater if present.)
-strip_macos_only() {
+# Remove non-Linux native artifacts that cannot run on Linux.
+# (node-pty darwin/win32 prebuilds & builds; Sparkle updater if present.)
+strip_non_linux_natives() {
 	local dir="${1:-$ASAR_EXTRACTED_DIR}"
 	[ -d "$dir" ] || die "no extracted dir to strip"
-	info "stripping macOS-only native artifacts..."
+	info "stripping non-Linux native artifacts..."
 
-	# node-pty darwin prebuilds & build output
-	rm -rf "$dir/node_modules/node-pty/prebuilds/darwin-x64" \
-	       "$dir/node_modules/node-pty/prebuilds/darwin-arm64" \
-	       "$dir/node_modules/node-pty/bin" \
+	# node-pty darwin & win32 prebuilds, plus build output / bin
+	local plat
+	for plat in darwin-x64 darwin-arm64 win32-x64 win32-arm64; do
+		rm -rf "$dir/node_modules/node-pty/prebuilds/$plat" 2>/dev/null || true
+	done
+	rm -rf "$dir/node_modules/node-pty/bin" \
 	       "$dir/node_modules/node-pty/build" 2>/dev/null || true
 
 	# @lydell/node-pty darwin platform packages
@@ -49,7 +51,8 @@ asar_pack() {
 	local ordering="$SCRIPT_DIR/app.asar.ordering"
 	( cd "$src" && find . -type f | LC_ALL=C sort | sed 's#^\./##' ) > "$ordering"
 
-	# --unpack-dir keeps node_modules native layout intact outside the asar.
+	# Clear any stale asar + unpacked tree so only current contents remain.
+	rm -rf "$out" "$out.unpacked"
 	npx --yes asar pack "$src" "$out" \
 		--ordering "$ordering" \
 		--unpack "{*.node,*.so,*.dylib}" >/dev/null
