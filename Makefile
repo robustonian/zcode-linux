@@ -55,8 +55,8 @@ install: ## Install the latest package from dist/ (needs sudo)
 run-app: ## Launch the generated codex-app
 	@"$(APP_DIR)/start.sh"
 
-bootstrap: ## One-shot: install-deps → build-app → package → install
-	@echo "TODO (C12): full bootstrap pipeline"
+bootstrap: ## One-shot: install latest ZCode (deps → build → package → install)
+	@bash scripts/install-latest.sh $(if $(filter-out bootstrap,$(MAKECMDGOALS)),$(MAKECMDGOALS),)
 
 clean: ## Remove generated app, work dirs and dist artifacts
 	@rm -rf "$(APP_DIR)" app-extracted dmg-extract "$(DIST_DIR)" work

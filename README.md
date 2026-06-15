@@ -40,24 +40,29 @@ ZCode Desktop is an Electron app. Electron apps bundle their UI/logic in a platf
 
 ## Quick start
 
-> Filled in once the pipeline is functional. Target (C12):
->
-> ```bash
-> git clone https://github.com/<owner>/zcode-linux.git
-> cd zcode-linux
-> make bootstrap        # install deps → build codex-app → package → install
-> ```
->
-> Or step by step:
->
-> ```bash
-> make install-deps     # bootstrap 7zz + build deps
-> make inspect          # analyze the upstream DMG, write inspect-report.json
-> make build-app        # build ./zcode-app/
-> ./zcode-app/start.sh  # run it
-> make deb              # build a .deb into dist/
-> make appimage         # build an AppImage into dist/
-> ```
+One command — installs or updates to the latest upstream version:
+
+```bash
+git clone https://github.com/<owner>/zcode-linux.git
+cd zcode-linux
+make bootstrap            # deps → fetch latest DMG → build → package → install
+```
+
+`make bootstrap` (a.k.a. `scripts/install-latest.sh`) detects the latest
+upstream version, skips the rebuild if you are already up to date, and
+installs the `.deb` (it will prompt for sudo). Pass `--force` to rebuild
+regardless: `make bootstrap -- --force`.
+
+Step by step:
+
+```bash
+make install-deps         # bootstrap 7zz + system build deps
+make inspect              # analyze the upstream DMG → inspect-report.json
+make build-app            # build ./zcode-app/
+./zcode-app/start.sh      # run it
+make deb                  # build a .deb into dist/
+make appimage             # build an AppImage into dist/
+```
 
 ## Configuration (environment variables)
 
