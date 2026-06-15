@@ -56,11 +56,15 @@ EOF
 		cp "$opt_root/icon.png" "$root/usr/share/icons/hicolor/256x256/apps/$PACKAGE_NAME.png"
 	fi
 
-	# Normalize ownership-independent permissions.
+	# Normalize permissions, but preserve exec bits inside the Electron
+	# runtime tree. chrome_crashpad_handler MUST stay executable or the app
+	# traps (SIGTRAP / core dump) on startup.
 	find "$root" -type d -exec chmod 0755 {} \; 2>/dev/null || true
-	find "$root" -type f -exec chmod 0644 {} \; 2>/dev/null || true
-	chmod 0755 "$root/usr/bin/$PACKAGE_NAME" \
-	           "$opt_root/start.sh" \
-	           "$opt_root/electron/electron" 2>/dev/null || true
-	find "$opt_root/electron" -type f -name "*.so*" -exec chmod 0755 {} \; 2>/dev/null || true
+	find "$root" -type f ! -path "$opt_root/electron/*" -exec chmod 0644 {} \; 2>/dev/null || true
+	chmod 0755 "$root/usr/bin/$PACKAGE_NAME" "$opt_root/start.sh" 2>/dev/null || true
+	chmod 0755 "$opt_root/electron/electron" \
+	           "$opt_root/electron/chrome_crashpad_handler" \
+	           "$opt_root/electron/chrome-sandbox" 2>/dev/null || true
+	find "$opt_root/electron" -type f \( -name "*.so" -o -name "*.so.*" \) \
+		-exec chmod 0755 {} \; 2>/dev/null || true
 }

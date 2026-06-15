@@ -50,6 +50,20 @@ ensure_7zz() {
 	rm -rf "$tmp"
 }
 
+ensure_en_us_locale() {
+	if ! command -v locale-gen >/dev/null 2>&1; then return 0; fi
+	if locale -a 2>/dev/null | grep -qixFe 'en_US.UTF-8'; then
+		info "en_US.UTF-8 locale already available"
+		return 0
+	fi
+	info "generating en_US.UTF-8 locale (for the app's default LANG)..."
+	if [ -f /etc/locale.gen ]; then
+		sudo sed -i 's/^# *\(en_US\.UTF-8.*\)/\1/' /etc/locale.gen
+	fi
+	sudo locale-gen en_US.UTF-8 >/dev/null 2>&1 \
+		|| warn "locale-gen failed; the app will fall back to the system locale"
+}
+
 main() {
 	local pm; pm="$(detect_pm)"
 	info "package manager: $pm"
@@ -79,6 +93,7 @@ main() {
 	esac
 
 	ensure_7zz
+	ensure_en_us_locale
 }
 
 main "$@"

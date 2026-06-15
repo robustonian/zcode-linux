@@ -10,9 +10,13 @@ if [ ! -x "$ELECTRON_BIN" ]; then
 	exit 1
 fi
 
-# Default to English for the app UI unless the user overrides.
-export LANG="${LANG:-en_US.UTF-8}"
-export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+# Default to English for the app UI when the locale is actually generated;
+# otherwise leave the system locale alone (an ungenerated LC_ALL makes
+# setlocale fail and can destabilize Electron).
+if locale -a 2>/dev/null | grep -qixFe 'en_US.UTF-8'; then
+	export LANG="${LANG:-en_US.UTF-8}"
+	export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+fi
 
 # Seed English UI locale on first run (ZCode defaults to zh-CN otherwise;
 # the user can switch language in-app afterwards).
