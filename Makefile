@@ -17,8 +17,8 @@ DMG ?=
 help: ## Show this help
 	@awk 'BEGIN { \
 		FS = ":.*?##"; \
-		printf "zcode-linux — ZCode DMG → Linux 変換フレームワーク\n\n"; \
-		printf "使い方:\n  make <target>\n\nターゲット:\n"; \
+		printf "zcode-linux - ZCode DMG -> Linux conversion framework\n\n"; \
+		printf "Usage:\n  make <target>\n\nTargets:\n"; \
 	} \
 	/^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
