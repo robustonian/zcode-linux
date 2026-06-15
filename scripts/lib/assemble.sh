@@ -25,14 +25,16 @@ assemble_app() {
 	cp "$tmpl" "$dest/start.sh"
 	chmod +x "$dest/start.sh"
 
-	# Stage extra resource dirs (glm, model-providers, tools) + icon from the app bundle.
+	# Stage extra resource dirs (glm, model-providers, tools) + icon.
+	# These mirror macOS Contents/Resources/ — place them beside app.asar in
+	# electron/resources/ so the app finds them via process.resourcesPath.
 	local app="${APP_BUNDLE_DIR:-}"
 	local resources="$app/Contents/Resources"
 	if [ -n "$app" ] && [ -d "$resources" ]; then
 		for d in glm model-providers tools; do
 			if [ -d "$resources/$d" ]; then
-				rm -rf "$dest/$d"
-				cp -r "$resources/$d" "$dest/$d"
+				rm -rf "$eresources/$d"
+				cp -r "$resources/$d" "$eresources/$d"
 			fi
 		done
 		[ -f "$resources/icon.png" ] && cp "$resources/icon.png" "$dest/icon.png"
