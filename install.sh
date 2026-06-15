@@ -98,6 +98,7 @@ main() {
 
 	load_lib install-helpers
 	load_lib dmg
+	load_lib inspect
 	check_deps
 
 	# Stage: resolve + (optionally) download the DMG.
@@ -116,11 +117,16 @@ main() {
 		exit 0
 	fi
 
-	# Remaining pipeline stages land in C3+.
-	info "DMG fetched and extracted (C2). App bundle: ${APP_BUNDLE_DIR:-<none>}"
-	info "inspect/repack/native/electron/assemble/package stages land in C3-C12."
-	if [ "$INSPECT" = 1 ] || [ "$PACKAGE_ONLY" = 1 ]; then
-		warn "requested mode not implemented yet (lands in C3+)"
+	if [ "$INSPECT" = 1 ]; then
+		inspect_app "${APP_BUNDLE_DIR:-}"
+		exit 0
+	fi
+
+	# Remaining pipeline stages land in C4+.
+	info "DMG fetched and extracted. App bundle: ${APP_BUNDLE_DIR:-<none>}"
+	info "repack/native/electron/assemble/package stages land in C4-C12."
+	if [ "$PACKAGE_ONLY" = 1 ]; then
+		warn "package mode not implemented yet (lands in C10+)"
 	fi
 }
 
