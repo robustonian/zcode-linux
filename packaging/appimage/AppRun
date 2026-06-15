@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# AppRun — AppImage entry point for zcode-desktop.
+# Resolves the AppDir (wherever the AppImage is mounted) and runs the app.
+set -euo pipefail
+if [ -n "${APPDIR:-}" ]; then
+	APPDIR="$(readlink -f "$APPDIR")"
+else
+	SELF="$(readlink -f "${BASH_SOURCE[0]:-$0}")"
+	APPDIR="$(dirname "$SELF")"
+fi
+exec "$APPDIR/opt/zcode-desktop/start.sh" "$@"
