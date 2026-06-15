@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ZCode
+Comment=ZCode (unofficial Linux build)
+Exec=/usr/bin/zcode-desktop %U
+Icon=zcode-desktop
+Categories=Development;IDE;
+Terminal=false
+StartupNotify=true
+StartupWMClass=zcode-desktop
+MimeType=x-scheme-handler/zcode;
