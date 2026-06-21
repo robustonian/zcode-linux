@@ -5,9 +5,13 @@
 
 PACKAGE_NAME="${PACKAGE_NAME:-zcode-desktop}"
 
-# Resolve a package version: explicit env > inspect-report.json > fallback.
+# Resolve a package version: explicit env > ZCODE_VERSION > inspect-report.json > fallback.
 resolve_package_version() {
 	if [ -n "${PACKAGE_VERSION:-}" ]; then return; fi
+	if [ -n "${ZCODE_VERSION:-}" ]; then
+		PACKAGE_VERSION="${ZCODE_VERSION}-zlinux1"
+		return
+	fi
 	local report="$SCRIPT_DIR/inspect-report.json"
 	if [ -f "$report" ]; then
 		local v

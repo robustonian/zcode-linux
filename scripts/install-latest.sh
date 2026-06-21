@@ -83,6 +83,11 @@ main() {
 	fi
 
 	info "rebuilding from the latest DMG (--fresh)..."
+	# Export the detected upstream version so EVERY downstream stage (install.sh
+	# AND build-deb.sh) sees the same version. A per-command assignment would only
+	# reach install.sh and leave build-deb.sh reading the stale inspect-report.json,
+	# which is why the .deb kept coming out as 3.0.1 even after detecting 3.1.2.
+	export ZCODE_VERSION="$latest"
 	( cd "$REPO_DIR" && ./install.sh --fresh ) || { warn "build failed"; return 1; }
 
 	info "building native package..."

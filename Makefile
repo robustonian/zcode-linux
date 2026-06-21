@@ -55,8 +55,13 @@ install: ## Install the latest package from dist/ (needs sudo)
 run-app: ## Launch the generated codex-app
 	@"$(APP_DIR)/start.sh"
 
-bootstrap: ## One-shot: install latest ZCode (deps → build → package → install)
-	@bash scripts/install-latest.sh $(if $(filter-out bootstrap,$(MAKECMDGOALS)),$(MAKECMDGOALS),)
+FORCE ?=
+
+bootstrap: ## One-shot: install latest ZCode (deps → build → package → install). Use FORCE=--force to rebuild when up-to-date
+	@bash scripts/install-latest.sh $(FORCE)
+
+bootstrap-force: ## Same as `make bootstrap FORCE=--force` (rebuild even when up-to-date)
+	@bash scripts/install-latest.sh --force
 
 clean: ## Remove generated app, work dirs and dist artifacts
 	@rm -rf "$(APP_DIR)" app-extracted dmg-extract "$(DIST_DIR)" work

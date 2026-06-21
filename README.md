@@ -52,7 +52,8 @@ make bootstrap            # deps → fetch latest DMG → build → package → 
 `make bootstrap` (a.k.a. `scripts/install-latest.sh`) detects the latest
 upstream version, skips the rebuild if you are already up to date, and
 installs the `.deb` (it will prompt for sudo). Pass `--force` to rebuild
-regardless: `make bootstrap -- --force`.
+regardless: `make bootstrap FORCE=--force` (or the shorthand
+`make bootstrap-force`).
 
 Step by step:
 
@@ -72,7 +73,7 @@ make appimage             # build an AppImage into dist/
 | `ZCODE_UPSTREAM_DMG_URL` | latest on `cdn.zcode-ai.com` | Override the upstream DMG URL |
 | `ZCODE_VERSION` | auto-detected from changelog | Pin an upstream version (e.g. `3.0.1`) |
 | `DMG` (Makefile) / positional arg | — | Use a local DMG you already downloaded |
-| `ZCODE_INSTALL_DIR` | `./codex-app` | Where the runnable app is generated |
+| `ZCODE_INSTALL_DIR` | `./zcode-app` | Where the runnable app is generated |
 | `ELECTRON_MIRROR` | GitHub releases | Mirror for the Linux Electron download |
 
 ## Project structure
