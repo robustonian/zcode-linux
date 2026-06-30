@@ -75,6 +75,72 @@ make appimage             # build an AppImage into dist/
 | `DMG` (Makefile) / positional arg | — | Use a local DMG you already downloaded |
 | `ZCODE_INSTALL_DIR` | `./zcode-app` | Where the runnable app is generated |
 | `ELECTRON_MIRROR` | GitHub releases | Mirror for the Linux Electron download |
+| `ZCODE_JA_MODE` | unset | Set to `1` to enable the optional Japanese display translation layer |
+| `ZCODE_JA_TRANSLATE_ENDPOINT` | unset | Local sidecar endpoint for assistant-message translation, for example `http://127.0.0.1:3847/translate` |
+| `ZCODE_JA_TRANSLATE_FORMAT` | `segments` | Translation endpoint format: `segments` for the small sidecar contract, or `openai-chat` for OpenAI-compatible `/v1/chat/completions` |
+| `ZCODE_JA_TRANSLATE_MODEL` | unset | Model name used when `ZCODE_JA_TRANSLATE_FORMAT=openai-chat` |
+| `ZCODE_JA_TRANSLATE_TIMEOUT_MS` | `12000` | Translation request timeout for the Japanese display layer |
+| `ZCODE_JA_TRANSLATE_ALLOW_REMOTE` | unset | Set to `1` to allow a non-loopback translation endpoint; loopback is enforced by default |
+| `ZCODE_JA_TRANSLATE_DEBUG` | unset | Set to `1` to log Japanese display translation diagnostics in the renderer console |
+
+## Optional Japanese display translation
+
+Some GLM models may produce Chinese even when the app UI is set to English or
+the prompt asks for Japanese. This project includes an opt-in display layer
+that translates visible assistant message text after it appears in the
+renderer. It does not modify the stored conversation, model request body, tool
+calls, code blocks, diffs, JSON-like content, paths, or command output.
+
+Enable it by running ZCode with a local translation sidecar:
+
+```bash
+ZCODE_JA_MODE=1 \
+ZCODE_JA_TRANSLATE_ENDPOINT=http://127.0.0.1:3847/translate \
+./zcode-app/start.sh
+```
+
+For a local OpenAI-compatible server or proxy, point the endpoint at
+`/v1/chat/completions` and set a model:
+
+```bash
+ZCODE_JA_MODE=1 \
+ZCODE_JA_TRANSLATE_FORMAT=openai-chat \
+ZCODE_JA_TRANSLATE_ENDPOINT=http://127.0.0.1:3847/v1/chat/completions \
+ZCODE_JA_TRANSLATE_MODEL=gpt-4.1-mini \
+./zcode-app/start.sh
+```
+
+Keep API keys in the local server or proxy environment, not in ZCode. The
+renderer calls the configured endpoint directly, so putting a secret in ZCode
+would expose it to the renderer process. If the endpoint forwards to a remote
+OpenAI-compatible API, run a loopback proxy such as:
+
+```bash
+OPENAI_API_KEY=... your-translation-proxy
+```
+
+The endpoint must be loopback (`localhost`, `127.0.0.1`, or `::1`) unless
+`ZCODE_JA_TRANSLATE_ALLOW_REMOTE=1` is set. If Japanese mode or the endpoint is
+not configured, the display layer is a no-op.
+
+The sidecar receives JSON like:
+
+```json
+{
+  "sourceLanguage": "zh",
+  "targetLanguage": "ja",
+  "messageId": "optional-message-id",
+  "segments": [
+    { "id": "0", "text": "..." }
+  ]
+}
+```
+
+It should return either `{"segments":[{"id":"0","text":"..."}]}` or
+`{"translations":["..."]}`. The renderer shows the Japanese text by default and
+adds a per-message toggle for the original text. Because the request is made
+from the Electron renderer, the sidecar should allow the app origin with CORS
+headers and handle `OPTIONS` preflight requests.
 
 ## Project structure
 
