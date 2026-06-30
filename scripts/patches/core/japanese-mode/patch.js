@@ -9,7 +9,7 @@ const path = require('path');
 
 const PRELOAD_NEEDLE = 'y.contextBridge.exposeInMainWorld("zcode",{connectRemote:';
 const PRELOAD_REPLACEMENT =
-  'y.contextBridge.exposeInMainWorld("zcode",{japaneseModeConfig:c(()=>({enabled:/^(1|true|yes|on)$/i.test(process.env.ZCODE_JA_MODE||""),endpoint:process.env.ZCODE_JA_TRANSLATE_ENDPOINT||"",allowRemote:/^(1|true|yes|on)$/i.test(process.env.ZCODE_JA_TRANSLATE_ALLOW_REMOTE||""),timeoutMs:Number.parseInt(process.env.ZCODE_JA_TRANSLATE_TIMEOUT_MS||"",10)||12000,debug:/^(1|true|yes|on)$/i.test(process.env.ZCODE_JA_TRANSLATE_DEBUG||"")}),"japaneseModeConfig"),connectRemote:';
+  'y.contextBridge.exposeInMainWorld("zcode",{japaneseModeConfig:c(()=>({enabled:/^(1|true|yes|on)$/i.test(process.env.ZCODE_JA_MODE||""),endpoint:process.env.ZCODE_JA_TRANSLATE_ENDPOINT||"",format:process.env.ZCODE_JA_TRANSLATE_FORMAT||"",model:process.env.ZCODE_JA_TRANSLATE_MODEL||"",allowRemote:/^(1|true|yes|on)$/i.test(process.env.ZCODE_JA_TRANSLATE_ALLOW_REMOTE||""),timeoutMs:Number.parseInt(process.env.ZCODE_JA_TRANSLATE_TIMEOUT_MS||"",10)||12000,debug:/^(1|true|yes|on)$/i.test(process.env.ZCODE_JA_TRANSLATE_DEBUG||"")}),"japaneseModeConfig"),connectRemote:';
 const OVERLAY_MARKER = '__zcodeJapaneseDisplayOverlayInstalled';
 
 function findRendererIndex(extractedDir) {

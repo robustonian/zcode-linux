@@ -77,6 +77,8 @@ make appimage             # build an AppImage into dist/
 | `ELECTRON_MIRROR` | GitHub releases | Mirror for the Linux Electron download |
 | `ZCODE_JA_MODE` | unset | Set to `1` to enable the optional Japanese display translation layer |
 | `ZCODE_JA_TRANSLATE_ENDPOINT` | unset | Local sidecar endpoint for assistant-message translation, for example `http://127.0.0.1:3847/translate` |
+| `ZCODE_JA_TRANSLATE_FORMAT` | `segments` | Translation endpoint format: `segments` for the small sidecar contract, or `openai-chat` for OpenAI-compatible `/v1/chat/completions` |
+| `ZCODE_JA_TRANSLATE_MODEL` | unset | Model name used when `ZCODE_JA_TRANSLATE_FORMAT=openai-chat` |
 | `ZCODE_JA_TRANSLATE_TIMEOUT_MS` | `12000` | Translation request timeout for the Japanese display layer |
 | `ZCODE_JA_TRANSLATE_ALLOW_REMOTE` | unset | Set to `1` to allow a non-loopback translation endpoint; loopback is enforced by default |
 | `ZCODE_JA_TRANSLATE_DEBUG` | unset | Set to `1` to log Japanese display translation diagnostics in the renderer console |
@@ -95,6 +97,26 @@ Enable it by running ZCode with a local translation sidecar:
 ZCODE_JA_MODE=1 \
 ZCODE_JA_TRANSLATE_ENDPOINT=http://127.0.0.1:3847/translate \
 ./zcode-app/start.sh
+```
+
+For a local OpenAI-compatible server or proxy, point the endpoint at
+`/v1/chat/completions` and set a model:
+
+```bash
+ZCODE_JA_MODE=1 \
+ZCODE_JA_TRANSLATE_FORMAT=openai-chat \
+ZCODE_JA_TRANSLATE_ENDPOINT=http://127.0.0.1:3847/v1/chat/completions \
+ZCODE_JA_TRANSLATE_MODEL=gpt-4.1-mini \
+./zcode-app/start.sh
+```
+
+Keep API keys in the local server or proxy environment, not in ZCode. The
+renderer calls the configured endpoint directly, so putting a secret in ZCode
+would expose it to the renderer process. If the endpoint forwards to a remote
+OpenAI-compatible API, run a loopback proxy such as:
+
+```bash
+OPENAI_API_KEY=... your-translation-proxy
 ```
 
 The endpoint must be loopback (`localhost`, `127.0.0.1`, or `::1`) unless

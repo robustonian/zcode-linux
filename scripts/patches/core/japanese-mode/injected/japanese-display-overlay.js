@@ -72,11 +72,15 @@
     const localAllowRemote = readBool(getLocalStorageValue('zcode.japaneseMode.allowRemote'));
     const localDebug = readBool(getLocalStorageValue('zcode.japaneseMode.debug'));
     const localEndpoint = getLocalStorageValue('zcode.japaneseMode.endpoint');
+    const localFormat = getLocalStorageValue('zcode.japaneseMode.format');
+    const localModel = getLocalStorageValue('zcode.japaneseMode.model');
     const localTimeout = getLocalStorageValue('zcode.japaneseMode.timeoutMs');
 
     return {
       enabled: localEnabled ?? !!exposed.enabled,
       endpoint: (localEndpoint || exposed.endpoint || '').trim(),
+      format: (localFormat || exposed.format || 'segments').trim().toLowerCase(),
+      model: (localModel || exposed.model || '').trim(),
       allowRemote: localAllowRemote ?? !!exposed.allowRemote,
       timeoutMs: readNumber(localTimeout ?? exposed.timeoutMs, DEFAULT_TIMEOUT_MS),
       debug: localDebug ?? !!exposed.debug,
@@ -101,6 +105,10 @@
   function canUseEndpoint(config) {
     if (!config.enabled || !config.endpoint) return false;
     return config.allowRemote || isLoopbackEndpoint(config.endpoint);
+  }
+
+  function isOpenAIChatFormat(config) {
+    return ['openai', 'openai-chat', 'openai-chat-completions', 'chat-completions'].includes(config.format);
   }
 
   function hasLikelyChinese(text) {
@@ -234,22 +242,88 @@
     const timer = window.setTimeout(() => controller.abort(), config.timeoutMs);
     try {
       const segments = records.map((record, index) => ({ id: String(index), text: record.original }));
-      const response = await fetch(config.endpoint, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
+      const body = isOpenAIChatFormat(config)
+        ? buildOpenAIChatBody(config, segments, messageId)
+        : {
           sourceLanguage: 'zh',
           targetLanguage: 'ja',
           messageId: messageId || null,
           segments,
-        }),
+        };
+      const response = await fetch(config.endpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
         credentials: 'omit',
         signal: controller.signal,
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return parseTranslationResponse(await response.json(), records.length);
+      const data = await response.json();
+      return isOpenAIChatFormat(config)
+        ? parseOpenAIChatResponse(data, records.length)
+        : parseTranslationResponse(data, records.length);
     } finally {
       window.clearTimeout(timer);
+    }
+  }
+
+  function buildOpenAIChatBody(config, segments, messageId) {
+    if (!config.model) throw new Error('ZCODE_JA_TRANSLATE_MODEL is required for openai-chat format');
+    return {
+      model: config.model,
+      temperature: 0,
+      messages: [
+        {
+          role: 'system',
+          content: [
+            'You are a translation engine.',
+            'Translate Chinese user-visible assistant text into natural Japanese.',
+            'Preserve code, commands, logs, URLs, file paths, identifiers, JSON keys, and quoted source text exactly.',
+            'Return only a JSON object with this shape: {"segments":[{"id":"0","text":"..."}]}.',
+            'Do not wrap the JSON in markdown or add explanations.',
+          ].join('\n'),
+        },
+        {
+          role: 'user',
+          content: JSON.stringify({
+            sourceLanguage: 'zh',
+            targetLanguage: 'ja',
+            messageId: messageId || null,
+            segments,
+          }),
+        },
+      ],
+    };
+  }
+
+  function parseOpenAIChatResponse(data, expectedCount) {
+    const content = data?.choices?.[0]?.message?.content;
+    if (typeof content !== 'string') return [];
+    const parsed = parseJsonLike(content);
+    if (parsed) return parseTranslationResponse(parsed, expectedCount);
+    if (expectedCount === 1 && content.trim()) return [content.trim()];
+    return [];
+  }
+
+  function parseJsonLike(content) {
+    const trimmed = content.trim();
+    const unfenced = trimmed
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+    try {
+      return JSON.parse(unfenced);
+    } catch {
+      const start = unfenced.indexOf('{');
+      const end = unfenced.lastIndexOf('}');
+      if (start >= 0 && end > start) {
+        try {
+          return JSON.parse(unfenced.slice(start, end + 1));
+        } catch {
+          return null;
+        }
+      }
+      return null;
     }
   }
 
